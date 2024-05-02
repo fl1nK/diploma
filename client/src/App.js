@@ -1,17 +1,26 @@
-import { useRef, useEffect, useState } from "react";
-import "./App.css";
-import * as faceapi from "face-api.js";
+import { useRef, useEffect, useState } from 'react';
+import './App.css';
+import * as faceapi from '@vladmandic/face-api';
 
 function App() {
   const videoRef = useRef();
   const canvasRef = useRef();
 
   const [people, setPeople] = useState();
+  const [time, setTime] = useState(new Date());
 
   // LOAD FROM USEEFFECT
   useEffect(() => {
     startVideo();
     videoRef && loadModels();
+
+    const timerID = setInterval(() => {
+      setTime(new Date());
+    }, 1000);
+
+    return () => {
+      clearInterval(timerID);
+    };
   }, []);
 
   // OPEN YOU FACE WEBCAM
@@ -31,10 +40,10 @@ function App() {
     Promise.all([
       // THIS FOR FACE DETECT AND LOAD FROM YOU PUBLIC/MODELS DIRECTORY
 
-      faceapi.nets.ssdMobilenetv1.loadFromUri("/models"),
-      faceapi.nets.tinyFaceDetector.loadFromUri("/models"),
-      faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
-      faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
+      faceapi.nets.ssdMobilenetv1.loadFromUri('/models'),
+      faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
+      faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
+      faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
       // faceapi.nets.faceExpressionNet.loadFromUri("/models"),
     ]).then(() => {
       faceMyDetect();
@@ -42,7 +51,7 @@ function App() {
   };
 
   function getLabeledFaceDescriptions() {
-    const labels = ["vlad"];
+    const labels = ['vlad'];
     return Promise.all(
       labels.map(async (label) => {
         const descriptions = [];
@@ -56,7 +65,7 @@ function App() {
           descriptions.push(detections.descriptor);
         }
         return new faceapi.LabeledFaceDescriptors(label, descriptions);
-      })
+      }),
     );
   }
 
@@ -67,6 +76,8 @@ function App() {
     // const canvas = faceapi.createCanvasFromMedia(videoRef.current);
 
     setInterval(async () => {
+      console.log(videoRef.current);
+
       const detections = await faceapi
         .detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions())
         .withFaceLandmarks()
@@ -74,9 +85,7 @@ function App() {
       // .withFaceExpressions();
 
       // DRAW YOU FACE IN WEBCAM
-      canvasRef.current.innerHtml = faceapi.createCanvasFromMedia(
-        videoRef.current
-      );
+      canvasRef.current.innerHtml = faceapi.createCanvasFromMedia(videoRef.current);
       faceapi.matchDimensions(canvasRef.current, {
         width: 640,
         height: 480,
@@ -87,9 +96,7 @@ function App() {
         height: 480,
       });
 
-      canvasRef.current
-        .getContext("2d", { willReadFrequently: true })
-        .clearRect(0, 0, 640, 480);
+      canvasRef.current.getContext('2d', { willReadFrequently: true }).clearRect(0, 0, 640, 480);
 
       const results = resized.map((d) => {
         return faceMatcher.findBestMatch(d.descriptor);
@@ -108,22 +115,17 @@ function App() {
         });
         drawBox.draw(canvasRef.current);
       });
-    }, 1000);
+    }, 1000 / 30);
   };
 
   return (
     <div className="myapp">
       <div>
-        <h2>{people}</h2>
+        <h2>{people + ' ' + time.toLocaleTimeString()}</h2>
       </div>
       <div className="appvide">
         <video crossOrigin="anonymous" ref={videoRef} autoPlay></video>
-        <canvas
-          ref={canvasRef}
-          width="640"
-          height="480"
-          className="appcanvas"
-        />
+        <canvas ref={canvasRef} width="640" height="480" className="appcanvas" />
       </div>
     </div>
   );
