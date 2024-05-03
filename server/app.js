@@ -3,7 +3,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const fileUpload = require('express-fileupload');
 
-const cheakFaceRouter = require('./routers/cheakFaceRouter');
+const faceRouter = require('./routers/faceRouter');
+const { loadModels } = require('./controllers/utils/faceUtils');
 
 const app = express();
 
@@ -13,7 +14,8 @@ app.use(
   }),
 );
 
-app.use(cheakFaceRouter);
+loadModels();
+app.use(faceRouter);
 
 mongoose
   .connect(
