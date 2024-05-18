@@ -1,10 +1,11 @@
 const express = require('express');
-
+const path = require('path');
 const mongoose = require('mongoose');
 const fileUpload = require('express-fileupload');
 
 const faceRouter = require('./routers/faceRouter');
 const { loadModels } = require('./controllers/utils/faceUtils');
+const corsMiddleware = require('./middleware/corsMiddleware');
 
 const app = express();
 
@@ -15,7 +16,23 @@ app.use(
 );
 
 loadModels();
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, 'data')));
+
+app.use(corsMiddleware);
 app.use(faceRouter);
+
+app.post('/send-message', (req, res) => {
+  console.log(req.body);
+  const message = req.body.message;
+
+  console.log('Received message from client:', message);
+
+  // Відповідь на клієнта з повідомленням "Повідомлення успішно отримано на сервері"
+  res.send('Повідомлення успішно отримано на сервері');
+});
 
 mongoose
   .connect(

@@ -1,9 +1,12 @@
-const FaceModel = require('../models/Face');
-const fs = require('fs');
-// const path = require('path');
+const FaceModel = require('../../models/Face');
+const ImageModel = require('../../models/Image');
 
-const faceapi = require('@vladmandic/face-api/dist/face-api.node-gpu.js');
-const tf = require('@tensorflow/tfjs-node-gpu');
+const fs = require('fs');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
+
+const faceapi = require('@vladmandic/face-api');
+const tf = require('@tensorflow/tfjs-node');
 // const { image } = require('@tensorflow/tfjs-node');
 
 const { Canvas, Image, createCanvas, loadImage } = require('canvas');
@@ -25,15 +28,88 @@ async function getAllDescriptorsFromDB() {
   return faces;
 }
 
+async function createUserDB(files, label) {
+  try {
+    const filesCount = Object.keys(files).length;
+
+    const { firstName, lastName, middleName, entryTime, outTime } = label;
+    const arrayIdImageModel = [];
+    // Loop through the images
+    for (let i = 1; i <= filesCount; i++) {
+      const fieldName = `photo${i}`;
+
+      const img = await canvas.loadImage(files[fieldName].tempFilePath);
+
+      // Read each face and save the face descriptions in the descriptions array
+      const detections = await faceapi
+        .detectSingleFace(img)
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+      // Save image to server and get its URL
+      let url = await savePhoto(files[fieldName]);
+
+      const newImage = new ImageModel({
+        url: url,
+        descriptions: detections.descriptor, // Assuming this is how you want to store descriptions for each image
+      });
+      const newImageModel = await newImage.save();
+      arrayIdImageModel.push(newImageModel._id);
+    }
+
+    // Create a new face document with the given label and save it in DB
+    const createFace = new FaceModel({
+      firstName: firstName,
+      lastName: lastName,
+      middleName: middleName,
+      images: arrayIdImageModel,
+      entryTime: entryTime,
+      outTime: outTime,
+    });
+    await createFace.save();
+
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+
+async function savePhoto(photo) {
+  return new Promise((resolve, reject) => {
+    const tempPath = photo.tempFilePath;
+    const uniqueFilename = uuidv4() + path.extname(photo.name);
+
+    const targetPath = path.join('data', uniqueFilename);
+
+    const readStream = fs.createReadStream(tempPath);
+    const writeStream = fs.createWriteStream(targetPath);
+
+    readStream.on('error', (err) => {
+      reject(err);
+    });
+
+    writeStream.on('error', (err) => {
+      reject(err);
+    });
+
+    writeStream.on('finish', () => {
+      const url = uniqueFilename; // Assuming uploads directory is served statically
+      resolve(url);
+    });
+
+    readStream.pipe(writeStream);
+  });
+}
+
 async function uploadLabeledImages(images, label) {
   try {
-    let counter = 0;
+    const { firstName, lastName, middleName } = label;
     const descriptions = [];
     // Loop through the images
     for (let i = 0; i < images.length; i++) {
       const img = await canvas.loadImage(images[i]);
-      counter = (i / images.length) * 100;
-      console.log(`Progress = ${counter}%`);
+
       // Read each face and save the face descriptions in the descriptions array
       const detections = await faceapi
         .detectSingleFace(img)
@@ -44,14 +120,16 @@ async function uploadLabeledImages(images, label) {
 
     // Create a new face document with the given label and save it in DB
     const createFace = new FaceModel({
-      label: label,
+      firstName: firstName,
+      lastName: lastName,
+      middleName: middleName,
       descriptions: descriptions,
     });
     await createFace.save();
     return true;
   } catch (error) {
     console.log(error);
-    return error;
+    return false;
   }
 }
 
@@ -60,7 +138,7 @@ async function getDetectedFaceForVideo(image) {
 
   const frameNumber = match ? parseInt(match[1]) : 0;
 
-  const faces = getAllDescriptorsFromDB();
+  const faces = await getAllDescriptorsFromDB();
 
   const faceMatcher = new faceapi.FaceMatcher(faces, 0.6);
 
@@ -76,7 +154,8 @@ async function getDetectedFaceForVideo(image) {
 }
 
 async function getDetectedFaceForImage(image) {
-  const faces = getAllDescriptorsFromDB();
+  const faces = await getAllDescriptorsFromDB();
+  console.log(faces);
 
   const faceMatcher = new faceapi.FaceMatcher(faces, 0.6);
 
@@ -100,4 +179,7 @@ module.exports = {
   getDetectedFaceForVideo,
   getDetectedFaceForImage,
   loadModels,
+  getAllDescriptorsFromDB,
+  createUserDB,
+  savePhoto,
 };

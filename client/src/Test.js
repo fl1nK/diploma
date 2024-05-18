@@ -7,6 +7,9 @@ function App() {
   const canvasRef = useRef();
   const inputRef = useRef(null);
 
+  const [videoWidth, setVideoWidth] = useState(null);
+  const [videoHeight, setVideoHeight] = useState(null);
+
   const [people, setPeople] = useState();
   const [time, setTime] = useState(new Date());
   const [videoURL, setVideoURL] = useState(null);
@@ -25,6 +28,11 @@ function App() {
   // HANDLE VIDEO UPLOAD
   const handleUpload = (event) => {
     const file = event.target.files[0];
+    const video = document.createElement('video');
+    video.onloadedmetadata = () => {
+      setVideoWidth(video.videoWidth);
+      setVideoHeight(video.videoHeight);
+    };
     const videoURL = URL.createObjectURL(file);
     setVideoURL(videoURL);
     setVideoLoaded(true);
@@ -75,12 +83,15 @@ function App() {
     console.log('faceMyDetect start');
 
     // const labeledFaceDescriptors = await getLabeledFaceDescriptions();
-    console.log('getLabeledFaceDescriptions start');
+    // console.log('getLabeledFaceDescriptions start');
 
     // const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
-    console.log('FaceMatcher start');
+    // console.log('FaceMatcher start');
     setInterval(async () => {
-      console.log('faceMyDetect Interval');
+      // console.log('faceMyDetect Interval');
+
+      // console.log(videoRef.current);
+      console.log(videoURL);
 
       const videoEl = videoRef.current;
 
@@ -89,9 +100,7 @@ function App() {
         .withFaceLandmarks()
         .withFaceDescriptors();
 
-      canvasRef.current
-        .getContext('2d')
-        .clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      canvasRef.current.getContext('2d').clearRect(0, 0, 480, 640);
 
       const resizedDetections = faceapi.resizeResults(detections, {
         width: 480,
@@ -111,6 +120,10 @@ function App() {
   return (
     <div className="myapp">
       <div>
+        <p>
+          Width: {videoWidth}, Height: {videoHeight}
+        </p>
+
         <h2>{people + ' ' + time.toLocaleTimeString()}</h2>
       </div>
       <div className="appvide">
@@ -133,7 +146,8 @@ function App() {
               width="480"
               height="640"
               ref={videoRef}
-              src={videoURL}></video>
+              src={videoURL}
+            ></video>
             <canvas ref={canvasRef} width="480" height="640" className="appcanvas" />
           </>
         )}
