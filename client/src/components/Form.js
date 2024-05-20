@@ -13,20 +13,6 @@ const Form = () => {
   });
   const [notification, setNotification] = useState('');
   const fileInputRef = useRef();
-  const [users, setUsers] = useState([]);
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/get-users');
-      setUsers(response.data);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-    }
-  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -151,7 +137,7 @@ const Form = () => {
         <button type="submit">Відправити</button>
       </form>
 
-      <UserList users={users} />
+      <UserList />
     </div>
   );
 };

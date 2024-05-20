@@ -11,6 +11,7 @@ const {
   getAllDescriptors,
   setDetectedUser,
   getDetectedAllUsers,
+  deleteDetectedUser,
 } = require('../controllers/faceController');
 
 const { exportUser } = require('../controllers/excelController');
@@ -38,6 +39,7 @@ router.delete('/user/:userId/image/:imageId', deleteImageForUser);
 router.get('/get-descriptors', getAllDescriptors);
 router.post('/set-detected-user', setDetectedUser);
 router.get('/get-detected-all-users', getDetectedAllUsers);
+router.delete('/detected-user/:id', deleteDetectedUser);
 
 router.post('/get-excel', exportUser);
 

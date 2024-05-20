@@ -9,11 +9,14 @@ const exportUser = async (req, res) => {
 
   // Колонки для даних в Excel. Ключі повинні відповідати ключам об'єктів User
   worksheet.columns = [
-    { header: 'First Name', key: 'firstName', width: 15 },
-    { header: 'Last Name', key: 'lastName', width: 15 },
-    { header: 'Middle Name', key: 'middleName', width: 15 },
-    { header: 'Date', key: 'date', width: 15 },
-    { header: 'Time', key: 'time', width: 15 },
+    { header: 'Імя', key: 'firstName', width: 15 },
+    { header: 'Прізвище', key: 'lastName', width: 15 },
+    { header: 'По батькові', key: 'middleName', width: 15 },
+    { header: 'Початок роботи', key: 'entryTime', width: 15 },
+    { header: 'Кінець роботи', key: 'outTime', width: 15 },
+    { header: 'День', key: 'date', width: 15 },
+    { header: 'Час', key: 'time', width: 15 },
+    { header: 'Статус', key: 'status', width: 15 },
   ];
 
   // Проходимося по даним користувачів
@@ -24,8 +27,11 @@ const exportUser = async (req, res) => {
       firstName: user.userID.firstName,
       lastName: user.userID.lastName,
       middleName: user.userID.middleName,
+      entryTime: user.userID.entryTime,
+      outTime: user.userID.outTime,
       date: user.date,
       time: user.time,
+      status: user.status,
     });
     counter++;
   });

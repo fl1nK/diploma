@@ -425,6 +425,21 @@ async function getDetectedAllUsers(req, res) {
   }
 }
 
+async function deleteDetectedUser(req, res) {
+  try {
+    const { id } = req.params;
+
+    const detectedUser = await DetectedUser.findByIdAndDelete(id);
+
+    if (!detectedUser) {
+      return res.status(404).json({ message: 'Користувача не знайдено' });
+    }
+
+    return res.status(200).json({ message: 'Дані успішно видалені' });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+}
 module.exports = {
   getAllUser,
   getUser,
@@ -436,4 +451,5 @@ module.exports = {
   getAllDescriptors,
   setDetectedUser,
   getDetectedAllUsers,
+  deleteDetectedUser,
 };
