@@ -28,7 +28,11 @@ function Photo() {
       formDataToSend.append(`photo${index + 1}`, photo);
     });
     axios
-      .post('http://localhost:5000/test', formDataToSend)
+      .post('http://localhost:5000/test', formDataToSend,{
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
       .then((response) => {
         console.log('Photo uploaded:', response.data.photosUrl);
         console.log('Photo uploaded:', response.data.photosUrl[0]);

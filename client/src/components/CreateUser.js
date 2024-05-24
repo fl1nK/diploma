@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import UserList from './UserList';
+import {useSelector} from "react-redux";
 
 const Form = () => {
+  const token = useSelector((state) => state.auth.token);
+
   const [formData, setFormData] = useState({
     lastName: '',
     firstName: '',
@@ -41,6 +44,7 @@ const Form = () => {
       const response = await axios.post('http://localhost:5000/create-user', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
         },
       });
 
@@ -62,13 +66,14 @@ const Form = () => {
   };
 
   return (
-    <div>
-      {notification && <div>{notification}</div>}
-
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Прізвище:</label>
+    <div className='container'>
+      <form className='form' onSubmit={handleSubmit}>
+        <h1>Створити робітника</h1>
+        {notification && <div>{notification}</div>}
+        <div className='form__label'>
+          <label className='form__group'>Прізвище:</label>
           <input
+              className='form__input'
             type="text"
             name="lastName"
             value={formData.lastName}
@@ -78,9 +83,10 @@ const Form = () => {
             pattern="[A-Za-zА-Яа-яЁёІіЇїЄєҐґ]+"
           />
         </div>
-        <div>
-          <label>Ім'я:</label>
+        <div className='form__group'>
+          <label className='form__label'>Ім'я:</label>
           <input
+              className='form__input'
             type="text"
             name="firstName"
             value={formData.firstName}
@@ -90,9 +96,9 @@ const Form = () => {
             pattern="[A-Za-zА-Яа-яЁёІіЇїЄєҐґ]+"
           />
         </div>
-        <div>
-          <label>По батькові:</label>
-          <input
+        <div className='form__group'>
+          <label className='form__label'>По батькові:</label>
+          <input className='form__input'
             type="text"
             name="middleName"
             value={formData.middleName}
@@ -102,9 +108,9 @@ const Form = () => {
             pattern="[A-Za-zА-Яа-яЁёІіЇїЄєҐґ]+"
           />
         </div>
-        <div>
-          <label>Час початку роботи:</label>
-          <input
+        <div className='form__group'>
+          <label className='form__label'>Час початку роботи:</label>
+          <input className='form__input'
             type="time"
             name="entryTime"
             value={formData.entryTime}
@@ -112,9 +118,9 @@ const Form = () => {
             required
           />
         </div>
-        <div>
-          <label>Час завершення роботи:</label>
-          <input
+        <div className='form__group'>
+          <label className='form__label'>Час завершення роботи:</label>
+          <input className='form__input'
             type="time"
             name="outTime"
             value={formData.outTime}
@@ -122,9 +128,9 @@ const Form = () => {
             required
           />
         </div>
-        <div>
-          <label>Фотографії:</label>
-          <input
+        <div className='form__group'>
+          <label className='form__label'>Фотографії:</label>
+          <input className='form__input'
             type="file"
             name="photos"
             accept="image/*"
@@ -134,7 +140,7 @@ const Form = () => {
             required
           />
         </div>
-        <button type="submit">Відправити</button>
+        <button className='form__button' type="submit">Відправити</button>
       </form>
 
       <UserList />
