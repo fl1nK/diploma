@@ -1,11 +1,15 @@
 import React from 'react';
 import axios from 'axios';
+import {useSelector} from "react-redux";
 
 const DownloadExcelButton = ({ users }) => {
+  const token = useSelector((state) => state.auth.token);
+
   const handleDownload = async () => {
     try {
       const response = await axios.post('http://localhost:5000/get-excel', users, {
         responseType: 'blob', // Вказуємо, що очікуємо файл в форматі blob
+        'Authorization': `Bearer ${token}`
       });
 
       // Створюємо URL для завантаження файлу
@@ -21,8 +25,8 @@ const DownloadExcelButton = ({ users }) => {
   };
 
   return (
-    <div>
-      <button onClick={handleDownload}>Завантажити Excel</button>
+    <div className="excel__actions">
+      <button className="excel__button" onClick={handleDownload}>Завантажити Excel</button>
     </div>
   );
 };

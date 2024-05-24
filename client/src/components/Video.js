@@ -3,8 +3,11 @@ import '../App.css';
 import * as faceapi from '@vladmandic/face-api';
 import { getLabeledFaceDescriptions } from '../actions/face';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
 
 const Video = () => {
+  const token = useSelector((state) => state.auth.token);
+
   const inputRef = useRef(null);
   const videoRef = useRef();
   const canvasRef = useRef();
@@ -14,6 +17,16 @@ const Video = () => {
   const [videoSource, setVideoSource] = useState(null);
 
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [intervalId, setIntervalId] = useState(null);
+
+  useEffect(() => {
+    loadModels();
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [intervalId]);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -40,13 +53,20 @@ const Video = () => {
       faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
     ]);
   };
-  loadModels();
 
   const fetchUser = async (id) => {
     try {
-      const response = await axios.post(`http://localhost:5000/set-detected-user`, {
-        id,
-      });
+      const response = await axios.post(
+        `http://localhost:5000/set-detected-user`,
+        {
+          id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
     } catch (error) {
       console.error('Error fetching user:', error);
     }
@@ -67,7 +87,7 @@ const Video = () => {
 
     const faceMatcher = new faceapi.FaceMatcher(faces);
 
-    const intervalId = setInterval(async () => {
+    const id = setInterval(async () => {
       const videoEl = videoRef.current;
 
       const detections = await faceapi
@@ -75,39 +95,47 @@ const Video = () => {
         .withFaceLandmarks()
         .withFaceDescriptors();
 
-      canvasRef.current.getContext('2d').clearRect(0, 0, width, height);
+      if (canvasRef.current) {
+        const ctx = canvasRef.current.getContext('2d');
+        if (ctx) {
+          ctx.clearRect(0, 0, width, height);
+          // решта вашого коду, що використовує контекст
 
-      const resizedDetections = faceapi.resizeResults(detections, { width: width, height: height });
-      const results = resizedDetections.map((d) => faceMatcher.findBestMatch(d.descriptor));
-      // console.log(results);
+          const resizedDetections = faceapi.resizeResults(detections, {
+            width: width,
+            height: height,
+          });
+          const results = resizedDetections.map((d) => faceMatcher.findBestMatch(d.descriptor));
+          // console.log(results);
 
-      // const results = resizedDetections;
-      results.forEach((result, i) => {
-        // console.log(result.label);
+          // const results = resizedDetections;
+          results.forEach((result, i) => {
+            // console.log(result.label);
 
-        if (currentUser != result.label && result.label != 'unknown') {
-          fetchUser(result.label);
-          console.log(result.label);
-          currentUser = result.label;
+            if (currentUser !== result.label && result.label !== 'unknown') {
+              fetchUser(result.label);
+              console.log(result.label);
+              currentUser = result.label;
+            }
+
+            const box = resizedDetections[i].detection.box;
+            const drawBox = new faceapi.draw.DrawBox(box, { label: result.label });
+            drawBox.draw(canvasRef.current);
+          });
+        } else {
+          console.error('Failed to get 2D context from canvas element');
         }
-
-        const box = resizedDetections[i].detection.box;
-        const drawBox = new faceapi.draw.DrawBox(box, { label: result.label });
-        drawBox.draw(canvasRef.current);
-      });
+      } else {
+        console.error('Canvas element is not yet available');
+      }
     }, 1000 / 30);
 
-    const videoEl = videoRef.current;
-    videoEl.addEventListener('ended', () => {
-      clearInterval(intervalId);
-    });
+    setIntervalId(id);
   };
 
   return (
     <div className="myapp">
-      <p>
-        Video dimensions: {videoWidth}x{videoHeight}
-      </p>
+      <br />
       <div className="appvide">
         {!videoLoaded && (
           <div>

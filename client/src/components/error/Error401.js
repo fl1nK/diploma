@@ -1,10 +1,10 @@
-const Error404 = () => {
+const Error401 = () => {
     return (
         <div>
-            <h1>Сторінку не знайдено(</h1>
+            <h1>Користувач не авторизований!!!</h1>
         </div>
 
     );
 };
 
-export default Error404;
+export default Error401;

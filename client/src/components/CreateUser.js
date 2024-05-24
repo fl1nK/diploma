@@ -3,7 +3,7 @@ import axios from 'axios';
 import UserList from './UserList';
 import {useSelector} from "react-redux";
 
-const Form = () => {
+const CreateUser = () => {
   const token = useSelector((state) => state.auth.token);
 
   const [formData, setFormData] = useState({
@@ -15,7 +15,21 @@ const Form = () => {
     outTime: '',
   });
   const [notification, setNotification] = useState('');
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [refreshUserList, setRefreshUserList] = useState(false);
   const fileInputRef = useRef();
+
+  useEffect(() => {
+    const validateForm = () => {
+      const { lastName, firstName, middleName, photos } = formData;
+      return lastName.trim() !== '' &&
+          firstName.trim() !== '' &&
+          middleName.trim() !== '' &&
+          photos.length > 0;
+    };
+
+    setIsFormValid(validateForm());
+  }, [formData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -49,6 +63,7 @@ const Form = () => {
       });
 
       console.log(response.data);
+      alert(response.data.message)
       setNotification(response.data.message);
       setFormData({
         lastName: '',
@@ -59,9 +74,10 @@ const Form = () => {
         outTime: '',
       });
       fileInputRef.current.value = '';
+      setRefreshUserList(prevState => !prevState);
     } catch (error) {
       console.error('Error submitting form:', error);
-      setNotification('Під час створення людини виникла помилка.');
+      setNotification('Під час створення профілю виникла помилка.');
     }
   };
 
@@ -115,7 +131,6 @@ const Form = () => {
             name="entryTime"
             value={formData.entryTime}
             onChange={handleInputChange}
-            required
           />
         </div>
         <div className='form__group'>
@@ -125,7 +140,6 @@ const Form = () => {
             name="outTime"
             value={formData.outTime}
             onChange={handleInputChange}
-            required
           />
         </div>
         <div className='form__group'>
@@ -140,12 +154,12 @@ const Form = () => {
             required
           />
         </div>
-        <button className='form__button' type="submit">Відправити</button>
+        <button className='form__button' type="submit" disabled={!isFormValid}>Відправити</button>
       </form>
 
-      <UserList />
+      <UserList refresh={refreshUserList}/>
     </div>
   );
 };
 
-export default Form;
+export default CreateUser;

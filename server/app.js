@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const fileUpload = require('express-fileupload');
+require("dotenv").config()
 
 const faceRouter = require('./routers/faceRouter');
 const { loadModels } = require('./controllers/utils/faceUtils');

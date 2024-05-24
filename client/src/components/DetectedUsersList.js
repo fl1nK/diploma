@@ -1,17 +1,29 @@
 import React, { useState, useEffect } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import moment from 'moment';
+
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import DownloadExcelButton from './DownloadExcelButton';
+import { useSelector } from 'react-redux';
 
 const DetectedUsersList = () => {
+  const token = useSelector((state) => state.auth.token);
+
   const [users, setUsers] = useState([]);
-  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'ascending' });
+  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'descending' });
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedDate, setSelectedDate] = useState(null);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/get-detected-all-users');
+        const response = await axios.get('http://localhost:5000/get-detected-all-users', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setUsers(response.data);
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -45,7 +57,11 @@ const DetectedUsersList = () => {
   const filteredUsers = sortedUsers.filter((user) => {
     const fullName =
       `${user.userID.lastName} ${user.userID.firstName} ${user.userID.middleName}`.toLowerCase();
-    return fullName.includes(searchTerm.toLowerCase());
+    const userDate = moment(user.date, 'DD.MM.YYYY');
+    return (
+      fullName.includes(searchTerm.toLowerCase()) &&
+      (!selectedDate || userDate.isSame(moment(selectedDate), 'day'))
+    );
   });
 
   const requestSort = (key) => {
@@ -59,7 +75,11 @@ const DetectedUsersList = () => {
   const handleDeleteUser = async (userId) => {
     if (window.confirm('Ви впевнені, що хочете видалити цього користувача?')) {
       try {
-        await axios.delete(`http://localhost:5000/detected-user/${userId}`);
+        await axios.delete(`http://localhost:5000/detected-user/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setUsers(users.filter((user) => user._id !== userId));
         console.log('User deleted successfully!');
       } catch (error) {
@@ -69,49 +89,87 @@ const DetectedUsersList = () => {
   };
 
   return (
-    <div>
-      <h1>Список виявлених людей</h1>
-      <input
-        type="text"
-        placeholder="Пошук за ПІБ"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
-      <DownloadExcelButton users={filteredUsers} />
-      <table>
-        <thead>
-          <tr>
-            <th onClick={() => requestSort('userID.lastName')}>ПІБ</th>
-            <th onClick={() => requestSort('userID.entryTime')}>Початок роботи</th>
-            <th onClick={() => requestSort('userID.outTime')}>Кінець роботи</th>
-            <th onClick={() => requestSort('date')}>Дата</th>
-            <th onClick={() => requestSort('time')}>Час</th>
-            <th onClick={() => requestSort('status')}>Статус</th>
-            <th>Дії</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredUsers.map((user) => (
-            <tr key={user._id}>
-              <td>
-                <Link to={`/user/${user.userID._id}`}>
-                  {user.userID.lastName} {user.userID.firstName} {user.userID.middleName}
-                </Link>
-              </td>
-              <td>{user.userID.entryTime}</td>
-              <td>{user.userID.outTime}</td>
-              <td>{user.date}</td>
-              <td>{user.time}</td>
-              <td>{user.status}</td>
-              <td>
-                <button type="button" onClick={() => handleDeleteUser(user._id)}>
-                  Видалити
-                </button>
-              </td>
+    <div className="detected-users__container">
+      <div className="detected-users">
+        <h1 className="detected-users__title">Таблиця звіту</h1>
+        <div className="detected-users__filter">
+          <div className="form__group">
+            <label>Пошук за ПІБ:</label>
+            <input
+              className="detected-users__search"
+              type="text"
+              placeholder="Пошук за ПІБ"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="form__group">
+            <label>Виберіть дату:</label>
+            <DatePicker
+              selected={selectedDate}
+              onChange={(date) => setSelectedDate(date)}
+              placeholderText="dd/mm/yyyy"
+              dateFormat="dd/MM/yyyy"
+              isClearable
+              showYearDropdown
+              scrollableYearDropdown
+              yearDropdownItemNumber={15}
+            />
+          </div>
+          <DownloadExcelButton users={filteredUsers} />
+        </div>
+
+        <table className="table">
+          <thead>
+            <tr>
+              <th className="table__header" onClick={() => requestSort('userID.lastName')}>
+                ПІБ
+              </th>
+              <th className="table__header" onClick={() => requestSort('userID.entryTime')}>
+                Початок роботи
+              </th>
+              <th className="table__header" onClick={() => requestSort('userID.outTime')}>
+                Кінець роботи
+              </th>
+              <th className="table__header" onClick={() => requestSort('date')}>
+                Дата
+              </th>
+              <th className="table__header" onClick={() => requestSort('time')}>
+                Час
+              </th>
+              <th className="table__header" onClick={() => requestSort('status')}>
+                Статус
+              </th>
+              <th className="table__header">Дії</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredUsers.map((user) => (
+              <tr className="table__row" key={user._id}>
+                <td className="table__cell">
+                  <Link to={`/user/${user.userID._id}`}>
+                    {user.userID.lastName} {user.userID.firstName} {user.userID.middleName}
+                  </Link>
+                </td>
+                <td className="table__cell">{user.userID.entryTime}</td>
+                <td className="table__cell">{user.userID.outTime}</td>
+                <td className="table__cell">{user.date}</td>
+                <td className="table__cell">{user.time}</td>
+                <td className="table__cell">{user.status}</td>
+                <td className="table__cell">
+                  <button
+                    className="table__delete-button"
+                    type="button"
+                    onClick={() => handleDeleteUser(user._id)}
+                  >
+                    Видалити
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

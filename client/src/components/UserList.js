@@ -1,56 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import {useSelector} from "react-redux";
 
-const UserList = () => {
+const UserList = ({ refresh }) => {
   const [users, setUsers] = useState([]);
 
+  const token = useSelector((state) => state.auth.token);
+
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/get-users');
-        setUsers(response.data);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      }
-    };
-
     fetchUsers();
-  }, []);
+  }, [refresh]);
 
-  const handleDeleteUser = async (userId) => {
-    if (window.confirm('Ви впевнені, що хочете видалити цього користувача?')) {
-      try {
-        await axios.delete(`http://localhost:5000/user/${userId}`);
-        setUsers(users.filter((user) => user._id !== userId));
-        console.log('User deleted successfully!');
-      } catch (error) {
-        console.error('Error deleting user:', error);
-      }
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/get-users',{
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
     }
   };
 
   return (
-    <div>
+    <div className="table-container">
       <h1>Список користувачів</h1>
-      <table>
+      <table className="table">
         <thead>
           <tr>
-            <th>ПІБ</th>
-            <th>Початок роботи</th>
-            <th>Кінець роботи</th>
+            <th className="table__header" >ПІБ</th>
+            <th className="table__header" >Початок роботи</th>
+            <th className="table__header" >Кінець роботи</th>
           </tr>
         </thead>
         <tbody>
           {users.map((user) => (
-            <tr key={user._id}>
-              <td>
+            <tr className="table__row" key={user._id}>
+              <td className="table__cell">
                 <Link to={`/user/${user._id}`}>
                   {user.lastName} {user.firstName} {user.middleName}
                 </Link>
               </td>
-              <td>{user.entryTime}</td>
-              <td>{user.outTime}</td>
+              <td className="table__cell">{user.entryTime}</td>
+              <td className="table__cell">{user.outTime}</td>
             </tr>
           ))}
         </tbody>

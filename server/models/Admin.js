@@ -1,8 +1,7 @@
-const { unique } = require('@tensorflow/tfjs-node');
 const { Schema, model } = require('mongoose');
 
 const adminSchema = new Schema({
-  login: {
+  email: {
     type: String,
     required: true,
     unique: true,

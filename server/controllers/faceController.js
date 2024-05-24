@@ -162,7 +162,7 @@ async function createUser(req, res) {
   const result = await createUserDB(req.files, label);
 
   if (result) {
-    return res.status(200).json({ message: 'Дані обличчя успішно збережено' });
+    return res.status(200).json({ message: 'Дані робітника успішно збережено' });
   } else {
     return res.status(500).json({ message: 'Щось пішло не так, спробуйте ще раз.' });
   }
@@ -381,17 +381,6 @@ async function setDetectedUser(req, res) {
     } else if (currentTime > outTimeMinutes) {
       status = 'Закінчив';
     }
-    // // Отримуємо різні компоненти поточної дати та часу
-    // const year = currentDate.getFullYear(); // Рік
-    // const month = currentDate.getMonth() + 1; // Місяць (додаємо 1, оскільки місяці починаються з 0)
-    // const day = currentDate.getDate(); // День
-    // const hours = currentDate.getHours(); // Години
-    // const minutes = currentDate.getMinutes(); // Хвилини
-    // const seconds = currentDate.getSeconds(); // Секунди
-
-    // // Форматуємо час у зручний для вас спосіб
-    // const formattedDate = `${day}-${month}-${year}`;
-    // const formattedTime = `${hours}:${minutes}:${seconds}`;
 
     // Форматуйте поточну дату
     const formattedDate = currentDate.toLocaleDateString('uk-UA');
@@ -414,10 +403,9 @@ async function setDetectedUser(req, res) {
 
 async function getDetectedAllUsers(req, res) {
   try {
-    const detectedUsers = await DetectedUser.find().populate(
-      'userID',
-      'firstName lastName middleName entryTime outTime',
-    );
+    const detectedUsers = await DetectedUser.find()
+      .populate('userID', 'firstName lastName middleName entryTime outTime')
+      .sort({ date: -1, time: -1 });
 
     return res.json(detectedUsers);
   } catch (error) {
