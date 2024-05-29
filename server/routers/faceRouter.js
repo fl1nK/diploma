@@ -18,11 +18,12 @@ const { exportUser } = require('../controllers/excelController');
 const { registration, login } = require('../controllers/authController');
 
 const authToken = require('../middleware/authMiddleware');
+const {validateAuth} = require("../middleware/validateMiddleware");
 
 const router = express.Router();
 
-router.post('/registration', authToken, registration);
-router.post('/login', login);
+router.post('/registration', validateAuth , authToken, registration);
+router.post('/login', validateAuth ,login);
 
 router.get('/get-users', authToken, getAllUser);
 router.post('/create-user', authToken, createUser);
