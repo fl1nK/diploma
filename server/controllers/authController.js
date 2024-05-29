@@ -5,9 +5,11 @@ const Admin = require('../models/Admin');
 
 const registration = async (req, res) => {
     try{
-        const {email, password} = req.body;
+        const {password} = req.body;
 
-        const admin = await Admin.findOne({email});
+        const email = req.body.email.toString();
+
+        const admin = await Admin.findOne({ email: email });
         if (admin) {
             return res.status(400).json({message: `Адмін з таким логіном ${email} вже існує!`})
         }
@@ -27,9 +29,11 @@ const registration = async (req, res) => {
 
 const login = async (req, res) => {
     try{
-        const {email, password} = req.body;
+        const {password} = req.body;
 
-        const admin = await Admin.findOne({email});
+        const email = req.body.email.toString();
+
+        const admin = await Admin.findOne({ email: email });
         if (!admin) {
             return res.status(404).json({message: "Такого адмін не існує!"})
         }
