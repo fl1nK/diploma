@@ -6,21 +6,16 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
 const faceapi = require('@vladmandic/face-api');
-const tf = require('@tensorflow/tfjs-node');
-// const { image } = require('@tensorflow/tfjs-node');
+require('@tensorflow/tfjs-node');
 
-const { Canvas, Image, createCanvas, loadImage } = require('canvas');
+const { Canvas, Image } = require('canvas');
 faceapi.env.monkeyPatch({ Canvas, Image });
 const canvas = require('canvas');
 
-const { exec } = require('child_process');
-
 async function getAllDescriptorsFromDB() {
-  // Get all the face data from mongodb and loop through each of them to read the data
   let faces = await FaceModel.find();
-  for (i = 0; i < faces.length; i++) {
-    // Change the face data descriptors from Objects to Float32Array type
-    for (j = 0; j < faces[i].descriptions.length; j++) {
+  for (let i = 0; i < faces.length; i++) {
+    for (let j = 0; j < faces[i].descriptions.length; j++) {
       faces[i].descriptions[j] = new Float32Array(Object.values(faces[i].descriptions[j]));
     }
     faces[i] = new faceapi.LabeledFaceDescriptors(faces[i].label, faces[i].descriptions);
@@ -34,30 +29,27 @@ async function createUserDB(files, label) {
 
     const { firstName, lastName, middleName, entryTime, outTime } = label;
     const arrayIdImageModel = [];
-    // Loop through the images
+
     for (let i = 1; i <= filesCount; i++) {
       const fieldName = `photo${i}`;
 
       const img = await canvas.loadImage(files[fieldName].tempFilePath);
 
-      // Read each face and save the face descriptions in the descriptions array
       const detections = await faceapi
         .detectSingleFace(img)
         .withFaceLandmarks()
         .withFaceDescriptor();
 
-      // Save image to server and get its URL
       let url = await savePhoto(files[fieldName]);
 
       const newImage = new ImageModel({
         url: url,
-        descriptions: detections.descriptor, // Assuming this is how you want to store descriptions for each image
+        descriptions: detections.descriptor,
       });
       const newImageModel = await newImage.save();
       arrayIdImageModel.push(newImageModel._id);
     }
 
-    // Create a new face document with the given label and save it in DB
     const createFace = new FaceModel({
       firstName: firstName,
       lastName: lastName,
@@ -94,8 +86,7 @@ async function savePhoto(photo) {
     });
 
     writeStream.on('finish', () => {
-      const url = uniqueFilename; // Assuming uploads directory is served statically
-      resolve(url);
+      resolve(uniqueFilename);
     });
 
     readStream.pipe(writeStream);
@@ -106,11 +97,10 @@ async function uploadLabeledImages(images, label) {
   try {
     const { firstName, lastName, middleName } = label;
     const descriptions = [];
-    // Loop through the images
+
     for (let i = 0; i < images.length; i++) {
       const img = await canvas.loadImage(images[i]);
 
-      // Read each face and save the face descriptions in the descriptions array
       const detections = await faceapi
         .detectSingleFace(img)
         .withFaceLandmarks()
@@ -118,7 +108,6 @@ async function uploadLabeledImages(images, label) {
       descriptions.push(detections.descriptor);
     }
 
-    // Create a new face document with the given label and save it in DB
     const createFace = new FaceModel({
       firstName: firstName,
       lastName: lastName,
@@ -167,8 +156,6 @@ async function getDetectedFaceForImage(image) {
 }
 
 async function loadModels() {
-  // Load the models
-  // __dirname gives the root directory of the server
   await faceapi.nets.faceRecognitionNet.loadFromDisk('./models/faceApi');
   await faceapi.nets.faceLandmark68Net.loadFromDisk('./models/faceApi');
   await faceapi.nets.ssdMobilenetv1.loadFromDisk('./models/faceApi');
