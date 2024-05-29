@@ -51,7 +51,7 @@ const UserProfile = () => {
 
   const handleSaveChanges = async () => {
     try {
-      const response = await axios.put(`http://localhost:5000/user/${id}`, formData,{
+      await axios.put(`http://localhost:5000/user/${id}`, formData,{
         headers: {
           'Authorization': `Bearer ${token}`
         }

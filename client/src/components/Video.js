@@ -51,12 +51,12 @@ const Video = () => {
       faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
       faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
       faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
-    ]);
+    ]).then(() => true);
   };
 
   const fetchUser = async (id) => {
     try {
-      const response = await axios.post(
+      await axios.post(
         `http://localhost:5000/set-detected-user`,
         {
           id,

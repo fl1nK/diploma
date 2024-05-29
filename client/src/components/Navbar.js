@@ -1,13 +1,12 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { setToken, clearToken } from '../reduser/authSlice';
+import { clearToken } from '../reduser/authSlice';
 import { useDispatch } from 'react-redux';
 const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleLogout = async (e) => {
+  const handleLogout = async () => {
     dispatch(clearToken());
     navigate('/');
   };

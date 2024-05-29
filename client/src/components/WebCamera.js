@@ -17,11 +17,7 @@ const WebCamera = () => {
     websocket.onmessage = (event) => {
       const data = JSON.parse(event.data);
       // console.log(data);
-      if (Array.isArray(data)) {
-        setDetections(data);
-      } else {
-        setDetections(data);
-      }
+      setDetections(data);
     };
     setWs(websocket);
 
