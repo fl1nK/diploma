@@ -16,6 +16,10 @@ const detectedUser = new Schema({
   status: {
     type: String,
   },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 module.exports = model('DetectedUser', detectedUser);

@@ -15,9 +15,9 @@ const Navbar = () => {
   return (
     <div className="navbar">
       <div className="navbar__container">
-        {/* <NavLink className="navbar__link" to="/webcamera">
+        <NavLink className="navbar__link" to="/webcamera">
           webcamera
-        </NavLink> */}
+        </NavLink>
         <NavLink className="navbar__link" to="/video">
           Відео
         </NavLink>

@@ -28,7 +28,7 @@ const App = () => {
 
           <Route path="/userList" element={token ? <CreateUser /> : <Error401 />} />
           <Route path="/user/:id" element={token ? <UserProfile /> : <Error401 />} />
-          {/* <Route path="/webcamera" element={token ? <WebCamera /> : <Error401 />} /> */}
+          <Route path="/webcamera" element={token ? <WebCamera /> : <Error401 />} />
           <Route path="/video" element={token ? <Video /> : <Error401 />} />
           <Route path="/detectedUsers" element={token ? <DetectedUsersList /> : <Error401 />} />
         </Routes>

@@ -24,128 +24,129 @@ const {
   savePhoto,
 } = require('./utils/faceUtils');
 
-async function handlerCheckFaceImage(req, res) {
-  const File1 = req.files.File1.tempFilePath;
-  let result = await getDetectedFaceForImage(File1);
-  return res.json({ result });
-}
+// async function handlerCheckFaceImage(req, res) {
+//   const File1 = req.files.File1.tempFilePath;
+//   let result = await getDetectedFaceForImage(File1);
+//   return res.json({ result });
+// }
 
-async function handlerCheckFaceVideo(req, res) {
-  if (!req.files.video) {
-    return res.status(400).json({ message: 'No video file uploaded' });
-  }
+// async function handlerCheckFaceVideo(req, res) {
+//   if (!req.files.video) {
+//     return res.status(400).json({ message: 'No video file uploaded' });
+//   }
 
-  const videoFile = req.files.video;
-  const tempFilePath = videoFile.tempFilePath;
+//   const videoFile = req.files.video;
+//   const tempFilePath = videoFile.tempFilePath;
 
-  // Move uploaded file to temp directory
-  videoFile.mv(tempFilePath, async (err) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send(err);
-    }
+//   // Move uploaded file to temp directory
+//   videoFile.mv(tempFilePath, async (err) => {
+//     if (err) {
+//       console.error(err);
+//       return res.status(500).send(err);
+//     }
 
-    // Use ffmpeg to extract frames from the video
-    exec(
-      `ffmpeg -i ${tempFilePath} -vf fps=1 ./tmp/frame-%d.jpg`,
-      async (error, stdout, stderr) => {
-        if (error) {
-          console.error(error);
-          return res.status(500).send(error);
-        }
+//     // Use ffmpeg to extract frames from the video
+//     exec(
+//       `ffmpeg -i ${tempFilePath} -vf fps=1 ./tmp/frame-%d.jpg`,
+//       async (error, stdout, stderr) => {
+//         if (error) {
+//           console.error(error);
+//           return res.status(500).send(error);
+//         }
 
-        const files = fs.readdirSync('./tmp');
-        const images = files.filter((file) => file.endsWith('.jpg')).map((file) => `./tmp/${file}`);
+//         const files = fs.readdirSync('./tmp');
+//         const images = files.filter((file) => file.endsWith('.jpg')).map((file) => `./tmp/${file}`);
 
-        // Process each frame to find faces
-        let result = [];
-        for (let i = 0; i < images.length; i++) {
-          result.push(await getDetectedFaceForVideo(images[i]));
-        }
+//         // Process each frame to find faces
+//         let result = [];
+//         for (let i = 0; i < images.length; i++) {
+//           result.push(await getDetectedFaceForVideo(images[i]));
+//         }
 
-        let finalResults = [];
-        // Створити об'єкт, який буде містити групи за міткою
-        let labelGroups = {};
-        for (let i = 0; i < result.length; i++) {
-          let item = result[i];
-          if (item.length > 0) {
-            let label = item[0]._label;
-            if (!labelGroups[label]) {
-              labelGroups[label] = [];
-            }
-            labelGroups[label].push(item[0].frame);
-          }
-        }
+//         let finalResults = [];
+//         // Створити об'єкт, який буде містити групи за міткою
+//         let labelGroups = {};
+//         for (let i = 0; i < result.length; i++) {
+//           let item = result[i];
+//           if (item.length > 0) {
+//             let label = item[0]._label;
+//             if (!labelGroups[label]) {
+//               labelGroups[label] = [];
+//             }
+//             labelGroups[label].push(item[0].frame);
+//           }
+//         }
 
-        // Створити об'єкти за групами міток та відповідними масивами frame
-        for (const label in labelGroups) {
-          finalResults.push({
-            _label: label,
-            frame: labelGroups[label],
-          });
-        }
+//         // Створити об'єкти за групами міток та відповідними масивами frame
+//         for (const label in labelGroups) {
+//           finalResults.push({
+//             _label: label,
+//             frame: labelGroups[label],
+//           });
+//         }
 
-        console.log(finalResults);
+//         console.log(finalResults);
 
-        // Remove temp files
-        // fs.unlinkSync(tempFilePath);
-        files.forEach((file) => fs.unlinkSync(`./tmp/${file}`));
+//         // Remove temp files
+//         // fs.unlinkSync(tempFilePath);
+//         files.forEach((file) => fs.unlinkSync(`./tmp/${file}`));
 
-        return res.json({ finalResults });
-      },
-    );
-  });
-}
+//         return res.json({ finalResults });
+//       },
+//     );
+//   });
+// }
 
-async function handlerCreateFaceUser(req, res) {
-  const File1 = req.files.File1.tempFilePath;
-  const File2 = req.files.File2.tempFilePath;
-  const File3 = req.files.File3.tempFilePath;
-  const label = req.body.label;
+// async function handlerCreateFaceUser(req, res) {
+//   const File1 = req.files.File1.tempFilePath;
+//   const File2 = req.files.File2.tempFilePath;
+//   const File3 = req.files.File3.tempFilePath;
+//   const label = req.body.label;
 
-  let result = await uploadLabeledImages([File1, File2, File3], label);
-  if (result) {
-    return res.json({ message: 'Face data stored successfully' });
-  } else {
-    return res.json({ message: 'Something went wrong, please try again.' });
-  }
-}
+//   let result = await uploadLabeledImages([File1, File2, File3], label);
+//   if (result) {
+//     return res.json({ message: 'Face data stored successfully' });
+//   } else {
+//     return res.json({ message: 'Something went wrong, please try again.' });
+//   }
+// }
 
-async function detectFace(req, res) {
-  try {
-    const video = req.files.video; // Assuming you are using Multer middleware for handling file uploads
+// async function detectFace(req, res) {
+//   try {
+//     const video = req.files.video; // Assuming you are using Multer middleware for handling file uploads
 
-    const detections = await faceapi
-      .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-      .withFaceLandmarks()
-      .withFaceDescriptors();
+//     const detections = await faceapi
+//       .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+//       .withFaceLandmarks()
+//       .withFaceDescriptors();
 
-    return res.json({ detections });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-}
-async function сreateFaceUser(req, res) {
-  const label = req.body;
+//     return res.json({ detections });
+//   } catch (error) {
+//     return res.status(500).json({ error: error.message });
+//   }
+// }
+// async function сreateFaceUser(req, res) {
+//   const label = req.body;
 
-  const filesCount = Object.keys(req.files).length;
+//   const filesCount = Object.keys(req.files).length;
 
-  const photos = [];
-  for (let i = 1; i <= filesCount; i++) {
-    const fieldName = `photo${i}`;
-    if (req.files[fieldName]) {
-      photos.push(req.files[fieldName].tempFilePath);
-    }
-  }
+//   const photos = [];
+//   for (let i = 1; i <= filesCount; i++) {
+//     const fieldName = `photo${i}`;
+//     if (req.files[fieldName]) {
+//       photos.push(req.files[fieldName].tempFilePath);
+//     }
+//   }
 
-  let result = await test(photos, label);
+//   let result = await test(photos, label);
 
-  if (result) {
-    return res.status(200).json({ message: 'Дані обличчя успішно збережено' });
-  } else {
-    return res.status(500).json({ message: 'Щось пішло не так, спробуйте ще раз.' });
-  }
-}
+//   if (result) {
+//     return res.status(200).json({ message: 'Дані обличчя успішно збережено' });
+//   } else {
+//     return res.status(500).json({ message: 'Щось пішло не так, спробуйте ще раз.' });
+//   }
+// }
+
 async function getAllUser(req, res) {
   try {
     const faces = await FaceModel.find();
