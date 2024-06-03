@@ -15,11 +15,11 @@ const Navbar = () => {
     <div className="navbar">
       <div className="navbar__container">
         <NavLink className="navbar__link" to="/webcamera">
-          webcamera
+          Вебкамера
         </NavLink>
-        <NavLink className="navbar__link" to="/video">
+        {/* <NavLink className="navbar__link" to="/video">
           Відео
-        </NavLink>
+        </NavLink> */}
         <NavLink className="navbar__link" to="/userList">
           Створити профіль
         </NavLink>

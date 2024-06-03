@@ -1,0 +1,10 @@
+version: '3'
+services:
+  server:
+    image: fl1nk/server:latest
+    ports:
+      - '5000:3001'
+  client:
+    image: fl1nk/client:latest
+    ports:
+      - '3000:3000'

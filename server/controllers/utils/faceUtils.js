@@ -93,68 +93,6 @@ async function savePhoto(photo) {
   });
 }
 
-async function uploadLabeledImages(images, label) {
-  try {
-    const { firstName, lastName, middleName } = label;
-    const descriptions = [];
-
-    for (let i = 0; i < images.length; i++) {
-      const img = await canvas.loadImage(images[i]);
-
-      const detections = await faceapi
-        .detectSingleFace(img)
-        .withFaceLandmarks()
-        .withFaceDescriptor();
-      descriptions.push(detections.descriptor);
-    }
-
-    const createFace = new FaceModel({
-      firstName: firstName,
-      lastName: lastName,
-      middleName: middleName,
-      descriptions: descriptions,
-    });
-    await createFace.save();
-    return true;
-  } catch (error) {
-    console.log(error);
-    return false;
-  }
-}
-
-async function getDetectedFaceForVideo(image) {
-  const match = image.match(/frame-(\d+)/);
-
-  const frameNumber = match ? parseInt(match[1]) : 0;
-
-  const faces = await getAllDescriptorsFromDB();
-
-  const faceMatcher = new faceapi.FaceMatcher(faces, 0.6);
-
-  const img = await canvas.loadImage(image);
-
-  const detections = await faceapi.detectAllFaces(img).withFaceLandmarks().withFaceDescriptors();
-  const results = detections.map((d) => {
-    const match = faceMatcher.findBestMatch(d.descriptor);
-    return { ...match, frame: frameNumber };
-  });
-
-  return results;
-}
-
-async function getDetectedFaceForImage(image) {
-  const faces = await getAllDescriptorsFromDB();
-  console.log(faces);
-
-  const faceMatcher = new faceapi.FaceMatcher(faces, 0.6);
-
-  const img = await canvas.loadImage(image);
-
-  const detections = await faceapi.detectAllFaces(img).withFaceLandmarks().withFaceDescriptors();
-  const results = detections.map((d) => faceMatcher.findBestMatch(d.descriptor));
-  return results;
-}
-
 async function loadModels() {
   await faceapi.nets.faceRecognitionNet.loadFromDisk('./models/faceApi');
   await faceapi.nets.faceLandmark68Net.loadFromDisk('./models/faceApi');
@@ -162,9 +100,6 @@ async function loadModels() {
 }
 
 module.exports = {
-  uploadLabeledImages,
-  getDetectedFaceForVideo,
-  getDetectedFaceForImage,
   loadModels,
   getAllDescriptorsFromDB,
   createUserDB,

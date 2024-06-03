@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import {useSelector} from "react-redux";
+import { useSelector } from 'react-redux';
 
 const UserList = ({ refresh }) => {
   const [users, setUsers] = useState([]);
@@ -14,10 +14,10 @@ const UserList = ({ refresh }) => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/get-users',{
+      const response = await axios.get('http://localhost:5000/get-users', {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
       setUsers(response.data);
     } catch (error) {
@@ -27,13 +27,13 @@ const UserList = ({ refresh }) => {
 
   return (
     <div className="table-container">
-      <h1>Список користувачів</h1>
+      <h1>Список робітників</h1>
       <table className="table">
         <thead>
           <tr>
-            <th className="table__header" >ПІБ</th>
-            <th className="table__header" >Початок роботи</th>
-            <th className="table__header" >Кінець роботи</th>
+            <th className="table__header">ПІБ</th>
+            <th className="table__header">Початок роботи</th>
+            <th className="table__header">Кінець роботи</th>
           </tr>
         </thead>
         <tbody>

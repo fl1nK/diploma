@@ -47,10 +47,10 @@ const WebCamera = () => {
   }, [ws]);
 
   return (
-    <div>
-      <video ref={videoRef} autoPlay width="640" height="480" />
+    <div className="video__container">
+      <video className="video" ref={videoRef} autoPlay width="640" height="480" />
       <canvas ref={canvasRef} width="640" height="480" style={{ display: 'none' }} />
-      <div>{detections && detections.user && <div>Face detected: {detections.user}</div>}</div>
+      <div>{detections && detections.user && <h1>Виявлений робітник: {detections.user}</h1>}</div>
     </div>
   );
 };
