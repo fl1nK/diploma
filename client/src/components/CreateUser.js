@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import UserList from './UserList';
-import {useSelector} from "react-redux";
+import { useSelector } from 'react-redux';
 
 const CreateUser = () => {
   const token = useSelector((state) => state.auth.token);
@@ -22,10 +22,12 @@ const CreateUser = () => {
   useEffect(() => {
     const validateForm = () => {
       const { lastName, firstName, middleName, photos } = formData;
-      return lastName.trim() !== '' &&
-          firstName.trim() !== '' &&
-          middleName.trim() !== '' &&
-          photos.length > 0;
+      return (
+        lastName.trim() !== '' &&
+        firstName.trim() !== '' &&
+        middleName.trim() !== '' &&
+        photos.length > 0
+      );
     };
 
     setIsFormValid(validateForm());
@@ -58,12 +60,12 @@ const CreateUser = () => {
       const response = await axios.post('http://localhost:5000/create-user', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
       });
 
       console.log(response.data);
-      alert(response.data.message)
+      alert(response.data.message);
       setNotification(response.data.message);
       setFormData({
         lastName: '',
@@ -74,7 +76,7 @@ const CreateUser = () => {
         outTime: '',
       });
       fileInputRef.current.value = '';
-      setRefreshUserList(prevState => !prevState);
+      setRefreshUserList((prevState) => !prevState);
     } catch (error) {
       console.error('Error submitting form:', error);
       setNotification('Під час створення профілю виникла помилка.');
@@ -82,14 +84,14 @@ const CreateUser = () => {
   };
 
   return (
-    <div className='container'>
-      <form className='form' onSubmit={handleSubmit}>
+    <div className="container">
+      <form className="form" onSubmit={handleSubmit}>
         <h1>Створити робітника</h1>
         {notification && <div>{notification}</div>}
-        <div className='form__label'>
-          <label className='form__group'>Прізвище:</label>
+        <div className="form__group">
+          <label className="form__label">Прізвище:</label>
           <input
-              className='form__input'
+            className="form__input"
             type="text"
             name="lastName"
             value={formData.lastName}
@@ -99,10 +101,10 @@ const CreateUser = () => {
             pattern="[A-Za-zА-Яа-яЁёІіЇїЄєҐґ]+"
           />
         </div>
-        <div className='form__group'>
-          <label className='form__label'>Ім'я:</label>
+        <div className="form__group">
+          <label className="form__label">Ім'я:</label>
           <input
-              className='form__input'
+            className="form__input"
             type="text"
             name="firstName"
             value={formData.firstName}
@@ -112,9 +114,10 @@ const CreateUser = () => {
             pattern="[A-Za-zА-Яа-яЁёІіЇїЄєҐґ]+"
           />
         </div>
-        <div className='form__group'>
-          <label className='form__label'>По батькові:</label>
-          <input className='form__input'
+        <div className="form__group">
+          <label className="form__label">По батькові:</label>
+          <input
+            className="form__input"
             type="text"
             name="middleName"
             value={formData.middleName}
@@ -124,27 +127,30 @@ const CreateUser = () => {
             pattern="[A-Za-zА-Яа-яЁёІіЇїЄєҐґ]+"
           />
         </div>
-        <div className='form__group'>
-          <label className='form__label'>Час початку роботи:</label>
-          <input className='form__input'
+        <div className="form__group">
+          <label className="form__label">Час початку роботи:</label>
+          <input
+            className="form__input"
             type="time"
             name="entryTime"
             value={formData.entryTime}
             onChange={handleInputChange}
           />
         </div>
-        <div className='form__group'>
-          <label className='form__label'>Час завершення роботи:</label>
-          <input className='form__input'
+        <div className="form__group">
+          <label className="form__label">Час завершення роботи:</label>
+          <input
+            className="form__input"
             type="time"
             name="outTime"
             value={formData.outTime}
             onChange={handleInputChange}
           />
         </div>
-        <div className='form__group'>
-          <label className='form__label'>Фотографії:</label>
-          <input className='form__input'
+        <div className="form__group">
+          <label className="form__label">Фотографії:</label>
+          <input
+            className="form__input"
             type="file"
             name="photos"
             accept="image/*"
@@ -154,10 +160,12 @@ const CreateUser = () => {
             required
           />
         </div>
-        <button className='form__button' type="submit" disabled={!isFormValid}>Відправити</button>
+        <button className="form__button" type="submit" disabled={!isFormValid}>
+          Відправити
+        </button>
       </form>
 
-      <UserList refresh={refreshUserList}/>
+      <UserList refresh={refreshUserList} />
     </div>
   );
 };

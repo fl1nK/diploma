@@ -102,13 +102,8 @@
 
 .detected-users__search {
   padding: 0.5em;
-  margin-bottom: 1em;
   width: 100%;
   max-width: 300px;
-}
-
-.excel__actions {
-  margin-bottom: 1em;
 }
 
 .excel__button {
@@ -128,6 +123,11 @@
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 1em;
+}
+
+.table__scroll {
+  height: 600px;
+  overflow: auto;
 }
 
 .table__header {
@@ -349,4 +349,8 @@
 .profile__upload-button:disabled {
   background-color: #d3d3d3;
   cursor: not-allowed;
+}
+
+.react-datepicker-wrapper {
+  display: block !important;
 }
